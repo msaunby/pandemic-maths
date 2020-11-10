@@ -19,6 +19,12 @@ WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 600
 SCREEN_TITLE = "Bouncing Balls Example"
 
+from enum import Enum
+
+class Status(Enum):
+    VULNERABLE = 0
+    INFECTIOUS = 1
+    IMMUNE = 2
 
 class Ball:
     """
@@ -26,7 +32,7 @@ class Ball:
     """
     def __init__(self):
         self.id = -1
-        self.infected = False
+        self.status = Status.VULNERABLE
         self.hit = False
         self.x = 0
         self.y = 0
@@ -36,9 +42,9 @@ class Ball:
         self.color = None
 
     def infect(self):
-        if not self.infected:
+        if self.status == Status.VULNERABLE:
+            self.status = Status.INFECTIOUS
             self.color = (random.randrange(128,256),0,0)
-            self.infected = True
 
 
 def make_ball(id):
@@ -112,7 +118,7 @@ class MyGame(arcade.Window):
         total = 0
         for ball in self.ball_list:
             ball.hit = False
-            if ball.infected:
+            if ball.status != Status.VULNERABLE:
                 total += 1
         self.totals.append(total)
 
@@ -146,7 +152,7 @@ class MyGame(arcade.Window):
                     (ball.change_x,other.change_x) = (other.change_x,ball.change_x)
                     (ball.change_y,other.change_y) = (other.change_y,ball.change_y)
                     other.hit = True
-                    if ball.infected:
+                    if ball.status == Status.INFECTIOUS:
                         other.infect()
                     ball.hit = True
                     break
