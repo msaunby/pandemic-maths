@@ -8,6 +8,7 @@ python -m arcade.examples.bouncing_balls
 
 import arcade
 import random
+from arcade.gui import UIManager
 
 # --- Set up the constants
 
@@ -17,7 +18,6 @@ SCREEN_HEIGHT = 600
 # Size of popultion window
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 600
-SCREEN_TITLE = "Bouncing Balls Example"
 
 from enum import Enum
 
@@ -25,6 +25,11 @@ class Status(Enum):
     VULNERABLE = 0
     INFECTIOUS = 1
     IMMUNE = 2
+
+class Speed(Enum):
+    SLOW = 0
+    NORMAL = 1
+    FAST = 2
 
 class Ball:
     """
@@ -51,6 +56,16 @@ class Ball:
         self.status = Status.IMMUNE
         self.color = (0,random.randrange(128,256),0)
 
+    def speed(self,value):
+        if value == Speed.SLOW:
+            self.change_x = random.choice([-1, -0.5, 0.5, 1])
+            self.change_y = random.choice([-1, -0.5, 0.5, 1])
+        elif value == Speed.NORMAL:
+            self.change_x = random.choice([-2, -0.5, 0.5, 2])
+            self.change_y = random.choice([-2, -0.5, 0.5, 2])
+        else:
+            self.change_x = random.choice([-2.5, -0.75, 0.75, 2.5])
+            self.change_y = random.choice([-2.5, -0.75, 0.75, 2.5])
 
 def make_ball(id):
     """
@@ -69,24 +84,32 @@ def make_ball(id):
     ball.x = random.randrange(ball.size, WINDOW_WIDTH - ball.size)
     ball.y = random.randrange(ball.size, WINDOW_HEIGHT - ball.size)
 
-    # Speed and direction of rectangle
-    #ball.change_x = random.randrange(-2, 3)
-    #ball.change_y = random.randrange(-2, 3)
-
-    ball.change_x = random.choice([-2, -0.5, 0.5, 2])
-    ball.change_y = random.choice([-2, -0.5, 0.5, 2])
+    # Speed and direction
+     # Fast
+    ball.speed(Speed.NORMAL)
 
     # Color
     ball.color = (0, 0, random.randrange(128,256))
 
     return ball
 
+class FlatButton(arcade.gui.UIFlatButton):
 
-class MyGame(arcade.Window):
+    def balls(self, balls):
+        self.ball_list = balls
+
+    def on_click(self):
+        # This is how we lock down
+        for ball in self.ball_list:
+            ball.speed(Speed.SLOW)
+
+class MyGame(arcade.View):
     """ Main application class. """
 
     def __init__(self):
-        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+        #super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+        super().__init__()
+        self.ui_manager = UIManager()
         self.ball_list = []
         self.totals = []
         ball = make_ball(0)
@@ -108,16 +131,31 @@ class MyGame(arcade.Window):
         for ball in self.ball_list:
             arcade.draw_circle_filled(ball.x, ball.y, ball.size, ball.color)
 
-        
-
-
+    
         self.red_line_strip.draw()
         self.blue_line_strip.draw()
 
         # Put the text on the screen.
-        output = "Balls: {}".format(len(self.ball_list))
-        arcade.draw_text(output, 10, 20, arcade.color.WHITE, 14)
+        output = "Infected: {}".format(self.totals[-1])
+        arcade.draw_text(output, 1000, 40, arcade.color.WHITE, 14)
 
+    def on_show_view(self):
+        """ Called once when view is activated. """
+        self.setup()
+        arcade.set_background_color(arcade.color.BLACK)
+
+    def setup(self):
+        """ Set up this view. """
+        self.ui_manager.purge_ui_elements()
+
+        button = FlatButton(
+            'Lockdown',
+            center_x=1000,
+            center_y=20,
+            width=250
+        )
+        button.balls(self.ball_list)
+        self.ui_manager.add_ui_element(button)
 
     def on_update(self, delta_time):
         """ Movement and game logic """
@@ -131,7 +169,6 @@ class MyGame(arcade.Window):
         n = len(self.totals)
         self.red_points.append((5+WINDOW_WIDTH + n*0.4, (total*6)))
         self.blue_points.append((5+WINDOW_WIDTH + n*0.4, ((100-total)*6)))
-
 
         self.red_line_strip = arcade.create_line_strip(self.red_points, arcade.color.RED, 2)
         self.blue_line_strip = arcade.create_line_strip(self.blue_points, arcade.color.BLUE, 2)
@@ -176,20 +213,11 @@ class MyGame(arcade.Window):
 
 
 
-
-    def on_mouse_press(self, x, y, button, modifiers):
-        """
-        Called whenever the mouse button is clicked.
-        """
-        ball = make_ball(100)
-        ball.infect()
-        self.ball_list.append(ball)
-
-
 def main():
-    MyGame()
+    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, 'Pandemic')
+    view = MyGame()
+    window.show_view(view)
     arcade.run()
-
 
 if __name__ == "__main__":
     main()
