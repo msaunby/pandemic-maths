@@ -1,9 +1,9 @@
 """
-Bounce balls on the screen.
-Spawn a new ball for each mouse-click.
+Bouncing balls represent population. 
+Blue - not infected
+Red - infectious
+Green - infected but no longer infectious.
 
-If Python and Arcade are installed, this example can be run from the command line with:
-python -m arcade.examples.bouncing_balls
 """
 
 import arcade
@@ -19,6 +19,7 @@ SCREEN_HEIGHT = 600
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 600
 
+
 from enum import Enum
 
 class Status(Enum):
@@ -30,6 +31,8 @@ class Speed(Enum):
     SLOW = 0
     NORMAL = 1
     FAST = 2
+    
+DEFAULT_SPEED = Speed.NORMAL
 
 class Ball:
     """
@@ -85,8 +88,7 @@ def make_ball(id):
     ball.y = random.randrange(ball.size, WINDOW_HEIGHT - ball.size)
 
     # Speed and direction
-     # Fast
-    ball.speed(Speed.NORMAL)
+    ball.speed(DEFAULT_SPEED)
 
     # Color
     ball.color = (0, 0, random.randrange(128,256))
