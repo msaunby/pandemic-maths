@@ -13,6 +13,25 @@ from kivy.core.window import Window
 from kivy.graphics import (Color, Ellipse)
 from kivy.uix.floatlayout import FloatLayout
 from kivy.properties import (StringProperty, ObjectProperty)
+from kivy.properties import (
+    NumericProperty, ReferenceListProperty, ObjectProperty, BooleanProperty
+)
+
+class PongPaddle(Widget):
+    score = NumericProperty(0)
+    can_bounce = BooleanProperty(True)
+
+    def bounce_ball(self, ball):
+        if self.collide_widget(ball) and self.can_bounce:
+            vx, vy = ball.velocity
+            offset = (ball.center_y - self.center_y) / (self.height / 2)
+            bounced = Vector(-1 * vx, vy)
+            vel = bounced * 1.1
+            ball.velocity = vel.x, vel.y + offset
+            self.can_bounce = False
+        elif not self.collide_widget(ball) and not self.can_bounce:
+            self.can_bounce = True
+
 
 class BaseShape(Widget):
     '''(internal) Base class for moving with touches or calls.'''
@@ -67,8 +86,22 @@ class RegularShape(BaseShape):
             self.change_x = randchoice([-3, -2, -1, 0, 1, 2, 3])
             self.change_y = randchoice([-3, -2, -1, 0, 1, 2, 3])
 
+class PongGame(Widget):
+    player1 = ObjectProperty(None)
+    player2 = ObjectProperty(None)
+
+    def update(self, dt):
+        return
+
+    def on_touch_move(self, touch):
+        if touch.x < self.width / 3:
+            self.player1.center_y = touch.y
+        if touch.x > self.width - self.width / 3:
+            self.player2.center_y = touch.y
+
 
 class Collisions(App):
+
     def __init__(self, **kwargs):
         super(Collisions, self).__init__(**kwargs)
         # register an event for collision
@@ -86,7 +119,11 @@ class Collisions(App):
             shape.y -= shape.change_y
     
     def build(self):
-        scene = FloatLayout()
+
+        game = PongGame()
+
+        scene = game
+        #scene = FloatLayout()
 
         # list of shapes
         self.shapes = [
@@ -102,7 +139,10 @@ class Collisions(App):
 
         # update positions at regular intervals 
         Clock.schedule_interval(self.update_shapes,0.05)
-        return scene
+        #return scene
+
+        Clock.schedule_interval(game.update, 1.0 / 60.0)
+        return game
 
 
 if __name__ == '__main__':

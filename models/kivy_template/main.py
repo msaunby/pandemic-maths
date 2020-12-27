@@ -70,7 +70,7 @@ class PongGame(Widget):
             self.player2.center_y = touch.y
 
 
-class PandemicApp(App):
+class Pandemic(App):
     def build(self):
         game = PongGame()
         game.serve_ball()
@@ -79,4 +79,4 @@ class PandemicApp(App):
 
 
 if __name__ == '__main__':
-    PandemicApp().run()
+    Pandemic().run()
