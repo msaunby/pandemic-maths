@@ -45,12 +45,7 @@ class BaseShape(Widget):
         and give it a label if it's named.
         '''
         super(BaseShape, self).__init__(**kwargs)
-        self.size_hint = (None, None)
-        self.add_widget(Label(text=self.name))
-
-    def move_label(self, x, y, *args):
-        '''Move label with shape name as the only child.'''
-        self.children[0].pos = [x, y]
+        self.size_hint = (1000, 1000)
 
 
     def on_shape(self, instance, value):
@@ -58,13 +53,7 @@ class BaseShape(Widget):
 
     def on_pos(self, instance, pos):
 
-        # stick label to bounding box (widget)
-        if self.name:
-            self.move_label(*pos)
-
-        self.shape.pos = [self.x+40, self.y+40]
-        print("on_pos")
-
+        self.shape.pos = [self.x, self.y]
 
 
 class RegularShape(BaseShape):
@@ -87,20 +76,37 @@ class RegularShape(BaseShape):
             self.change_y = randchoice([-3, -2, -1, 0, 1, 2, 3])
 
 class PongGame(Widget):
-    player1 = ObjectProperty(None)
-    player2 = ObjectProperty(None)
+
+    def __init__(self, shapes, **kwargs):
+        super(PongGame, self).__init__(**kwargs)
+        self.shapes = shapes
+
+    def update_shapes(self,delay):
+        for shape in self.shapes:
+            shape.x += shape.change_x
+            shape.y -= shape.change_y    
 
     def update(self, dt):
-        return
-
-    def on_touch_move(self, touch):
-        if touch.x < self.width / 3:
-            self.player1.center_y = touch.y
-        if touch.x > self.width - self.width / 3:
-            self.player2.center_y = touch.y
-
+        # bounce ball off bottom or top
+        for ball in self.shapes:
+            if ball.y < 0:
+                ball.y = 0
+                ball.change_y *= -1
+            if ball.y > 200:
+                ball.y = 200
+                ball.change_y *= -1
+            if ball.x < 0:
+                ball.x = 0
+                ball.change_x *= -1
+            if ball.x > 300:
+                ball.x = 300
+                ball.change_x *= -1
+        self.update_shapes(self)
+               
 
 class Collisions(App):
+    player1 = ObjectProperty(None)
+    player2 = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super(Collisions, self).__init__(**kwargs)
@@ -117,13 +123,9 @@ class Collisions(App):
         for shape in self.shapes:
             shape.x += shape.change_x
             shape.y -= shape.change_y
+
     
     def build(self):
-
-        game = PongGame()
-
-        scene = game
-        #scene = FloatLayout()
 
         # list of shapes
         self.shapes = [
@@ -132,17 +134,15 @@ class Collisions(App):
             ) for x in range(10)
         ]
 
+        scene = PongGame(self.shapes)
+
         # move shapes to some random position
         for shape in self.shapes:
             shape.pos = [randint(50, i - 50) for i in Window.size]
             scene.add_widget(shape)
 
-        # update positions at regular intervals 
-        Clock.schedule_interval(self.update_shapes,0.05)
-        #return scene
-
-        Clock.schedule_interval(game.update, 1.0 / 60.0)
-        return game
+        Clock.schedule_interval(scene.update, 1.0 / 60.0)
+        return scene
 
 
 if __name__ == '__main__':
