@@ -8,10 +8,18 @@
         Rectangle:
             pos:self.pos
             size:self.size
+<Arena>:
+    canvas:
+        Color:
+            rgb: 0.1, 0.1, 0.1
+        Rectangle:
+            pos: self.pos
+            size: 400, 300
 
 <PongGame>:
     player1: player_left
     player2: player_right
+    arena: arena_1
 
     canvas:
         Color:
@@ -19,7 +27,10 @@
         Rectangle:
             pos: 0, 0
             size: self.width, self.height
-        
+
+    Arena:
+        id: arena_1
+
     PongPaddle:
         id: player_left
         x: root.x

@@ -18,6 +18,12 @@ from kivy.properties import (
     NumericProperty, ReferenceListProperty, ObjectProperty, BooleanProperty
 )
 
+class Arena(Widget):
+
+    def on_pos(self, instance, pos):
+        print("arena on_pos")
+        self.pos = pos
+
 class PongPaddle(Widget):
     score = NumericProperty(0)
     can_bounce = BooleanProperty(True)
@@ -64,8 +70,8 @@ class RegularShape(Widget):
         print("on_shape")
 
     def on_pos(self, instance, pos):
-
         self.shape.pos = [self.x, self.y]
+
     def infect(self):
         if self.infected:
             return
@@ -79,9 +85,12 @@ class RegularShape(Widget):
 
 class PongGame(Widget):
 
+    arena = ObjectProperty(None)
+    player1 = ObjectProperty(None)
+
     def __init__(self, shapes, **kwargs):
         super(PongGame, self).__init__(**kwargs)
-        self.register_event_type('on_collision')
+        self.register_event_type('on_collision') 
         self.shapes = shapes
 
     def on_collision(self, pair, *args):
@@ -94,6 +103,7 @@ class PongGame(Widget):
         if pair[0].infected: pair[1].infect()
 
     def update_shapes(self,delay):
+        self.arena.x += 10
         for shape in self.shapes:
             shape.x += shape.change_x
             shape.y -= shape.change_y    
@@ -134,9 +144,10 @@ class PongGame(Widget):
                
 
 class Collisions(App):
-    player1 = ObjectProperty(None)
-    player2 = ObjectProperty(None)
-
+    #player1 = ObjectProperty(None)
+    #player2 = ObjectProperty(None)
+   
+    
     def __init__(self, **kwargs):
         super(Collisions, self).__init__(**kwargs)
 
