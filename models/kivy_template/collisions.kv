@@ -16,9 +16,16 @@
             pos: self.pos
             size: 400, 300
 
+<Indicator>:
+    canvas:
+        Color:
+            rgb: self.color
+        Ellipse:
+            pos: self.pos
+            size: 10, 10
+
+
 <PongGame>:
-    player1: player_left
-    player2: player_right
     arena: arena_1
 
     canvas:
@@ -30,16 +37,3 @@
 
     Arena:
         id: arena_1
-
-    PongPaddle:
-        id: player_left
-        x: root.x
-        y: 0
-        size: 5, root.height
-        
-    PongPaddle:
-        id: player_right
-        x: root.width - self.width
-        center_y: root.center_y
-        
-
