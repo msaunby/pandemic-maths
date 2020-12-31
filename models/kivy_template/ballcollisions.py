@@ -74,7 +74,7 @@ class RegularShape(Widget):
         if self.infected or self.recovered:
             return
         self.infected = True
-        Clock.schedule_once(self.recover, 1)
+        Clock.schedule_once(self.recover, 4.0)
         self.susceptible_indicator.opacity = 0.0
         self.infected_indicator.opacity = 1.0  
         self.recovered_indicator.opacity = 0.0  
@@ -84,23 +84,30 @@ class PongGame(Widget):
 
     arena = ObjectProperty(None)
 
+
     def __init__(self, shapes, **kwargs):
         super().__init__(**kwargs)
         self.register_event_type('on_collision') 
         self.shapes = shapes
+        print(dir(self.arena))
+        for shape in self.shapes:
+            shape.pos = [randint(50, i - 50) for i in self.arena.size]
+            self.arena.add_widget(shape)
 
     def on_collision(self, pair, *args):
         '''Dispatched when objects collide, gives back colliding objects
         as a "pair" argument holding their instances.
         '''
+        (pair[0].change_x,pair[1].change_x) = (pair[1].change_x,pair[0].change_x)
+        (pair[0].change_y,pair[1].change_y) = (pair[1].change_y,pair[0].change_y)
         #print('Collision {} x {}'.format(pair[0].name, pair[1].name))
         if pair[1].infected: pair[0].infect()
         if pair[0].infected: pair[1].infect()
 
     def update_shapes(self,delay):
-        self.arena.x += 10
-        if self.arena.x > 400:
-            self.arena.x = 0
+        #self.arena.x += 10
+        #if self.arena.x > 400:
+        #    self.arena.x = 0
         for shape in self.shapes:
             shape.x += shape.change_x
             shape.y -= shape.change_y             
@@ -118,14 +125,14 @@ class PongGame(Widget):
             if ball.y < 0:
                 ball.y = 0
                 ball.change_y *= -1
-            if ball.y > 200:
-                ball.y = 200
+            if ball.y > self.arena.top:
+                ball.y = self.arena.top
                 ball.change_y *= -1
             if ball.x < 0:
                 ball.x = 0
                 ball.change_x *= -1
-            if ball.x > 300:
-                ball.x = 300
+            if ball.x > self.arena.right:
+                ball.x = self.arena.right
                 ball.change_x *= -1
         self.update_shapes(self)
 
@@ -154,11 +161,11 @@ class Collisions(App):
         scene = PongGame(self.shapes)
 
         # move to random positions
-        for shape in self.shapes:
-            shape.pos = [randint(50, i - 50) for i in Window.size]
-            scene.add_widget(shape)
+        #for shape in self.shapes:
+        #    shape.pos = [randint(50, i - 50) for i in Window.size]
+        #    scene.add_widget(shape)
 
-        Clock.schedule_interval(scene.update, 1.0 / 20.0)
+        Clock.schedule_interval(scene.update, 1.0 / 40.0)
         return scene
 
 
