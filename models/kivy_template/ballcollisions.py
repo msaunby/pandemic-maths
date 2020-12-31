@@ -36,16 +36,20 @@ class RegularShape(Widget):
     name = StringProperty('')
     shape = ObjectProperty()
     infected = False
+    recovered = False
 
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.y_indicator = Indicator([1,1,0])
-        self.add_widget(self.y_indicator)
-        self.r_indicator = Indicator([1,0,0])
-        self.r_indicator.opacity = 0.0
-        self.add_widget(self.r_indicator)
+        self.susceptible_indicator = Indicator([1,1,0])
+        self.add_widget(self.susceptible_indicator)
+        self.infected_indicator = Indicator([1,0,0])
+        self.infected_indicator.opacity = 0.0
+        self.add_widget(self.infected_indicator)
+        self.recovered_indicator = Indicator([0,0,1])
+        self.recovered_indicator.opacity = 0.0
+        self.add_widget(self.recovered_indicator)
 
         self.change_x = randchoice([-3, -2, -1, 0, 1, 2, 3])
         self.change_y = randchoice([-3, -2, -1, 0, 1, 2, 3])
@@ -55,15 +59,25 @@ class RegularShape(Widget):
         print("on_shape")
 
     def on_pos(self, instance, pos):
-        self.y_indicator.pos  = [self.x, self.y]
-        self.r_indicator.pos  = [self.x, self.y]
+        self.susceptible_indicator.pos  = [self.x, self.y]
+        self.infected_indicator.pos  = [self.x, self.y]
+        self.recovered_indicator.pos  = [self.x, self.y]
+
+    def recover(self,dt):
+        self.recovered = True
+        self.infected = False
+        self.susceptible_indicator.opacity = 0.0
+        self.infected_indicator.opacity = 0.0  
+        self.recovered_indicator.opacity = 1.0 
 
     def infect(self):
-        if self.infected:
+        if self.infected or self.recovered:
             return
         self.infected = True
-        self.y_indicator.opacity = 0.2
-        self.r_indicator.opacity = 1.0    
+        Clock.schedule_once(self.recover, 1)
+        self.susceptible_indicator.opacity = 0.0
+        self.infected_indicator.opacity = 1.0  
+        self.recovered_indicator.opacity = 0.0  
 
 
 class PongGame(Widget):
@@ -133,7 +147,7 @@ class Collisions(App):
         self.shapes = [
             RegularShape(
                 name='{}'.format(x)
-            ) for x in range(30)
+            ) for x in range(100)
         ]
         self.shapes[0].infect()    
         
