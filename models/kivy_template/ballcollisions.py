@@ -85,14 +85,20 @@ class PongGame(Widget):
     arena = ObjectProperty(None)
 
 
-    def __init__(self, shapes, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.register_event_type('on_collision') 
-        self.shapes = shapes
+        self.shapes = [
+            RegularShape(
+                name='{}'.format(x)
+            ) for x in range(100)
+        ]
+        self.shapes[0].infect()  
         print(dir(self.arena))
         for shape in self.shapes:
             shape.pos = [randint(50, i - 50) for i in self.arena.size]
             self.arena.add_widget(shape)
+        Clock.schedule_interval(self.update, 1.0 / 40.0)    
 
     def on_collision(self, pair, *args):
         '''Dispatched when objects collide, gives back colliding objects
@@ -105,9 +111,6 @@ class PongGame(Widget):
         if pair[0].infected: pair[1].infect()
 
     def update_shapes(self,delay):
-        #self.arena.x += 10
-        #if self.arena.x > 400:
-        #    self.arena.x = 0
         for shape in self.shapes:
             shape.x += shape.change_x
             shape.y -= shape.change_y             
@@ -143,31 +146,18 @@ class PongGame(Widget):
                 # dispatch a custom event if the objects collide
                 self.dispatch('on_collision', (com[0], com[1]))
 
-               
+
+    def build(self):
+        Clock.schedule_interval(self.update, 1.0 / 40.0)    
 
 class Collisions(App):
   
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def build(self):
-        self.shapes = [
-            RegularShape(
-                name='{}'.format(x)
-            ) for x in range(100)
-        ]
-        self.shapes[0].infect()    
-        
-        scene = PongGame(self.shapes)
-
-        # move to random positions
-        #for shape in self.shapes:
-        #    shape.pos = [randint(50, i - 50) for i in Window.size]
-        #    scene.add_widget(shape)
-
-        Clock.schedule_interval(scene.update, 1.0 / 40.0)
+    def build(self):  
+        scene = PongGame()
         return scene
-
 
 if __name__ == '__main__':
     Collisions().run()
