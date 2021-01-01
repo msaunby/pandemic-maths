@@ -32,12 +32,9 @@ class Indicator(Widget):
 
 class RegularShape(Widget):
 
-    # shape properties
     name = StringProperty('')
-    shape = ObjectProperty()
     infected = False
     recovered = False
-
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -51,12 +48,8 @@ class RegularShape(Widget):
         self.recovered_indicator.opacity = 0.0
         self.add_widget(self.recovered_indicator)
 
-        self.change_x = randchoice([-3, -2, -1, 0, 1, 2, 3])
-        self.change_y = randchoice([-3, -2, -1, 0, 1, 2, 3])
-
-
-    def on_shape(self, instance, value):
-        print("on_shape")
+        self.change_x = randchoice([-2, -1, -0.3, 0.3, 1, 2])
+        self.change_y = randchoice([-2, -1, -0.3, 0.3, 1, 2])
 
     def on_pos(self, instance, pos):
         self.susceptible_indicator.pos  = [self.x, self.y]
@@ -88,17 +81,27 @@ class PongGame(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.register_event_type('on_collision') 
+        Clock.schedule_once(self.begin, 1.0)
+        Clock.schedule_once(self.end, 30.0)
+
+    def end(self, dt):
+        self.sched.cancel()
+
+    def begin(self, dt):
         self.shapes = [
             RegularShape(
                 name='{}'.format(x)
             ) for x in range(100)
         ]
-        self.shapes[0].infect()  
+        self.shapes[0].infect() 
+        self.shapes[2].infect()
+
         print(dir(self.arena))
         for shape in self.shapes:
             shape.pos = [randint(50, i - 50) for i in self.arena.size]
             self.arena.add_widget(shape)
-        Clock.schedule_interval(self.update, 1.0 / 40.0)    
+        self.sched = Clock.schedule_interval(self.update, 1.0 / 60.0) 
+
 
     def on_collision(self, pair, *args):
         '''Dispatched when objects collide, gives back colliding objects
@@ -118,7 +121,6 @@ class PongGame(Widget):
         # get all combinations, used to check for collisions
         if not hasattr(self, 'combins'):
             self.combins = list(combinations(self.shapes, 2))
-
 
     def update(self, dt):
         
@@ -145,10 +147,6 @@ class PongGame(Widget):
             if sqrt(x + y) <= 5:
                 # dispatch a custom event if the objects collide
                 self.dispatch('on_collision', (com[0], com[1]))
-
-
-    def build(self):
-        Clock.schedule_interval(self.update, 1.0 / 40.0)    
 
 class Collisions(App):
   
