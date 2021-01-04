@@ -1,13 +1,13 @@
 #:kivy 1.0.9
 
 <Arena>:
-    size: 500, 400
+    size: 600,600
     canvas:
         Color:
-            rgb: 0.1, 0.1, 0.1
+            rgb: 0.3, 0.1, 0.1
         Rectangle:
             pos: self.pos
-            size: self.width + 10, self.height + 10
+            size: self.size
 
 <Indicator>:
     canvas:
@@ -18,8 +18,3 @@
             size: 10, 10
 
 
-<PongGame>:
-    arena: arena_1
-
-    Arena:
-        id: arena_1

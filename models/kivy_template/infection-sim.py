@@ -1,5 +1,13 @@
+# A simple model of viral infection.
+# Bounce 100 balls and when an infected ball strikes another it is
+# infected.
+# A recovery time is set, and once recovered an infected subject can
+# no longer be infected or infect another.
+# Assumes no other consequence of infection, i.e. all infected will
+# recover and be immune forever.
 
-# Check garden.collider for better performance.
+RECOVER_TIME = 4.0
+POPULATION_SIZE = 100
 
 from math import cos, sin, pi, sqrt
 from random import random, randint
@@ -8,20 +16,8 @@ from itertools import combinations
 
 from kivy.app import App
 from kivy.clock import Clock
-#from kivy.uix.label import Label
 from kivy.uix.widget import Widget
-from kivy.core.window import Window
-#from kivy.graphics import (Color, Ellipse)
-from kivy.uix.floatlayout import FloatLayout
-from kivy.properties import (StringProperty, ObjectProperty)
-from kivy.properties import (
-    NumericProperty, ReferenceListProperty, ObjectProperty, BooleanProperty
-)
-
-class Arena(Widget):
-
-    def on_pos(self, instance, pos):
-        self.pos = pos
+from kivy.properties import StringProperty
 
 class Indicator(Widget):
 
@@ -30,11 +26,12 @@ class Indicator(Widget):
         super().__init__(**kwargs)
 
 
-class RegularShape(Widget):
+class Person(Widget):
 
     name = StringProperty('')
     infected = False
     recovered = False
+    recover_time = RECOVER_TIME
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -50,6 +47,8 @@ class RegularShape(Widget):
 
         self.change_x = randchoice([-2, -1, -0.3, 0.3, 1, 2])
         self.change_y = randchoice([-2, -1, -0.3, 0.3, 1, 2])
+        self.change_x *= 2.0
+        self.change_y *= 2.0
 
     def on_pos(self, instance, pos):
         self.susceptible_indicator.pos  = [self.x, self.y]
@@ -67,95 +66,88 @@ class RegularShape(Widget):
         if self.infected or self.recovered:
             return
         self.infected = True
-        Clock.schedule_once(self.recover, 4.0)
+        Clock.schedule_once(self.recover, self.recover_time)
         self.susceptible_indicator.opacity = 0.0
         self.infected_indicator.opacity = 1.0  
         self.recovered_indicator.opacity = 0.0  
 
 
-class PongGame(Widget):
-
-    arena = ObjectProperty(None)
-
+class Arena(Widget):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.register_event_type('on_collision') 
-        Clock.schedule_once(self.begin, 1.0)
-        Clock.schedule_once(self.end, 30.0)
+        self.register_event_type('on_collision')
+        self.begin()
+
 
     def end(self, dt):
         self.sched.cancel()
 
-    def begin(self, dt):
-        self.shapes = [
-            RegularShape(
+    def begin(self):
+        self.population = [
+            Person(
                 name='{}'.format(x)
-            ) for x in range(100)
+            ) for x in range(POPULATION_SIZE)
         ]
-        self.shapes[0].infect() 
-        self.shapes[2].infect()
 
-        print(dir(self.arena))
-        for shape in self.shapes:
-            shape.pos = [randint(50, i - 50) for i in self.arena.size]
-            self.arena.add_widget(shape)
+        self.population[0].infect() 
+        self.population[2].infect()
+
+        for shape in self.population:
+            shape.pos = [randint(50, i - 50) for i in self.size]
+            self.add_widget(shape)
+
         self.sched = Clock.schedule_interval(self.update, 1.0 / 60.0) 
 
 
     def on_collision(self, pair, *args):
-        '''Dispatched when objects collide, gives back colliding objects
-        as a "pair" argument holding their instances.
-        '''
         (pair[0].change_x,pair[1].change_x) = (pair[1].change_x,pair[0].change_x)
         (pair[0].change_y,pair[1].change_y) = (pair[1].change_y,pair[0].change_y)
-        #print('Collision {} x {}'.format(pair[0].name, pair[1].name))
         if pair[1].infected: pair[0].infect()
         if pair[0].infected: pair[1].infect()
 
-    def update_shapes(self,delay):
-        for shape in self.shapes:
+    def update_population(self,delay):
+        for shape in self.population:
             shape.x += shape.change_x
             shape.y -= shape.change_y             
 
         # get all combinations, used to check for collisions
         if not hasattr(self, 'combins'):
-            self.combins = list(combinations(self.shapes, 2))
+            self.combins = list(combinations(self.population, 2))
 
     def update(self, dt):
         
-        for ball in self.shapes:
-            ball.color = [0.0,1.0,0.0]
+        for person in self.population:
+            person.color = [0.0,1.0,0.0]
 
-            if ball.y < 0:
-                ball.y = 0
-                ball.change_y *= -1
-            if ball.y > self.arena.top:
-                ball.y = self.arena.top
-                ball.change_y *= -1
-            if ball.x < 0:
-                ball.x = 0
-                ball.change_x *= -1
-            if ball.x > self.arena.right:
-                ball.x = self.arena.right
-                ball.change_x *= -1
-        self.update_shapes(self)
+            if person.y < 0:
+                person.y = 0
+                person.change_y *= -1
+            if person.y > self.top:
+                person.y = self.top
+                person.change_y *= -1
+            if person.x < 0:
+                person.x = 0
+                person.change_x *= -1
+            if person.x > self.right:
+                person.x = self.right
+                person.change_x *= -1
+        self.update_population(self)
 
         for com in self.combins:
             x = (com[0].center_x - com[1].center_x) ** 2
             y = (com[0].center_y - com[1].center_y) ** 2
             if sqrt(x + y) <= 5:
-                # dispatch a custom event if the objects collide
-                self.dispatch('on_collision', (com[0], com[1]))
+                self.on_collision((com[0],com[1]))
 
-class Collisions(App):
+class Infection(App):
   
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def build(self):  
-        scene = PongGame()
+        scene = Arena()
         return scene
 
 if __name__ == '__main__':
-    Collisions().run()
+    Infection().run()
