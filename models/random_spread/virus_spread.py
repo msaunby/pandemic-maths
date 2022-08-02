@@ -53,11 +53,11 @@ class Ball:
         if self.status == Status.VULNERABLE:
             self.status = Status.INFECTIOUS
             self.infectious = 130
-            self.color = (random.randrange(128,256),0,0)
+            self.color = (random.randrange(64,256),0,0)
 
     def immune(self):
         self.status = Status.IMMUNE
-        self.color = (0,random.randrange(128,256),0)
+        self.color = (0,random.randrange(64,256),0)
 
     def speed(self,value):
         if value == Speed.SLOW:
@@ -79,7 +79,6 @@ def make_ball(id):
     ball.id = id
 
     # Size of the ball
-    # ball.size = random.randrange(10, 30)
     ball.size = 10
 
     # Starting position of the ball.
@@ -91,7 +90,7 @@ def make_ball(id):
     ball.speed(DEFAULT_SPEED)
 
     # Color
-    ball.color = (0, 0, random.randrange(128,256))
+    ball.color = (0, 0, random.randrange(64,256))
 
     return ball
 
@@ -148,7 +147,7 @@ class MyGame(arcade.View):
 
     def setup(self):
         """ Set up this view. """
-        """
+        
         self.ui_manager.purge_ui_elements()
 
         button = FlatButton(
@@ -159,7 +158,7 @@ class MyGame(arcade.View):
         )
         button.balls(self.ball_list)
         self.ui_manager.add_ui_element(button)
-        """
+        
         pass
 
     def on_update(self, delta_time):
