@@ -148,6 +148,7 @@ class MyGame(arcade.View):
 
     def setup(self):
         """ Set up this view. """
+        """
         self.ui_manager.purge_ui_elements()
 
         button = FlatButton(
@@ -158,6 +159,8 @@ class MyGame(arcade.View):
         )
         button.balls(self.ball_list)
         self.ui_manager.add_ui_element(button)
+        """
+        pass
 
     def on_update(self, delta_time):
         """ Movement and game logic """
