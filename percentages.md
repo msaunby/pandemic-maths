@@ -2,7 +2,7 @@
 
 Percentages are used for all sorts of things, such as rates of VAT and other taxes, the chance of something happening, for example the probability of rain today, and demographics, e.g. in 2018 18.3% of the UK population was aged 65 or over.
 
-Although most of us are familiar with, and comfortable with percentages it's worth noting that there are other ways of saying the same thing. Fractions, and ratios tell exactly the same message.  A percentage is a proportion, or fraction, expressed in hundredth.  So 1% is equivalent to 1 in 100, or 1/100th.
+Although most of us are familiar with, and comfortable with percentages it's worth noting that there are other ways of saying the same thing. Fractions, and ratios tell exactly the same message.  A percentage is a proportion, or fraction, expressed in hundredths.  So 1% is equivalent to 1 in 100, or 1/100th.
 
 10% is equivalent to 1/10 or 1:10
 50% is equivalent to 1/2 or 1:2
